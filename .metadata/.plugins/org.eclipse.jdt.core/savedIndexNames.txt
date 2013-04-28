@@ -1,0 +1,4 @@
+INDEX VERSION 1.126+C:\Users\Patrick Dickey\Documents\GitHub\Quiz\.metadata\.plugins\org.eclipse.jdt.core
+2978850601.index
+667477123.index
+3201223708.index
