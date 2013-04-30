@@ -1,0 +1,9 @@
+package groupg.quiztime;
+
+public class Question {
+	public void Question (){
+		
+	}
+	private String _question;
+	
+}

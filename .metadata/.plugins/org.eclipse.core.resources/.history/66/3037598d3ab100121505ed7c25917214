@@ -1,0 +1,142 @@
+package groupg.quiztime;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import android.os.Bundle;
+import android.app.Activity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.support.v4.app.NavUtils;
+import android.annotation.TargetApi;
+import android.content.Intent;
+import android.content.res.AssetManager;
+import android.os.Build;
+
+public class QuizActivity extends Activity {
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		Intent intent = getIntent();
+		String name = intent.getStringExtra(Launch.EXTRA_NAME);
+		setTitle("Quiz: " + name);
+		int questionCount = 4; //TODO: Change to 50 when there are enough questions
+		AssetManager aManager = getAssets();
+		try {
+			InputStream iStream = aManager.open("scienceQuestions.txt");
+			BufferedReader bReader = new BufferedReader(new InputStreamReader(iStream));
+			String line = bReader.readLine();
+			Question[] questions = new Question[questionCount];
+			int ctr = 0;
+			while (line != null) {		
+				Question question = new Question();
+				
+				//Stub
+				question.setStub(line.toString().substring(3));
+				
+				//D1
+				line = bReader.readLine();
+				question.setDummy1(line.toString().substring(3));
+				
+				//D2
+				line = bReader.readLine();
+				question.setDummy2(line.toString().substring(3));
+				
+				//D3
+				line = bReader.readLine();
+				question.setDummy3(line.toString().substring(3));
+				
+				//C
+				line = bReader.readLine();
+				question.setCorrect(line.toString().substring(3));		
+				
+				questions[ctr] = question;
+				ctr ++;
+			}
+			
+			String[] answers = questions[0].getRandAnswerArray();
+			
+
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+		
+		setContentView(R.layout.activity_quiz);
+		// Show the Up button in the action bar.
+		setupActionBar();
+	}
+
+	/**
+	 * Set up the {@link android.app.ActionBar}, if the API is available.
+	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	private void setupActionBar() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			getActionBar().setDisplayHomeAsUpEnabled(true);
+		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.quiz, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			// This ID represents the Home or Up button. In the case of this
+			// activity, the Up button is shown. Use NavUtils to allow users
+			// to navigate up one level in the application structure. For
+			// more details, see the Navigation pattern on Android Design:
+			//
+			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
+			//
+			NavUtils.navigateUpFromSameTask(this);
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
+	/** onClick listener for answerBtn **/
+	public void answerClick(View view){
+		//Show next Q, save ans
+	}
+	
+	/** onClick listener for endQuizBtn **/
+	public void endQuizClick(View view){
+		Intent intent = new Intent(this, ResultsActivity.class);
+		
+		startActivity(intent);
+	}
+	
+	/** onClick listener for backBtn **/
+	public void backClick(View view){
+		Intent intent = new Intent(this, ResultsActivity.class);
+		
+		startActivity(intent);
+	}
+	
+	/** onClick listener for skipBtn **/
+	public void skipClick(View view){
+		Intent intent = new Intent(this, ResultsActivity.class);
+		
+		startActivity(intent);
+	}
+	
+
+}

@@ -1,0 +1,12 @@
+package groupg.quiztime;
+
+public class Question {
+	public void Question (){
+		_stub = "Make a default question";
+	}
+	private String _stub;
+	private String _dummy1;
+	private String _dummy2;
+	private String _dummy3;
+	private String _correct;
+}

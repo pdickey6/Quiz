@@ -21,7 +21,7 @@
             android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/textView1"
+                android:id="@+id/stubText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
@@ -75,42 +75,45 @@
     </ScrollView>
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/endQuizBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/button1"
-        android:layout_alignBottom="@+id/button1"
+        android:layout_alignBaseline="@+id/backBtn"
+        android:layout_alignBottom="@+id/backBtn"
         android:layout_centerHorizontal="true"
-        android:text="End Quiz" 
-        android:onClick="endQuizClick"/>
+        android:onClick="endQuizClick"
+        android:text="End Quiz" />
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/backBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/button2"
-        android:layout_alignBottom="@+id/button2"
+        android:layout_alignBaseline="@+id/skipBtn"
+        android:layout_alignBottom="@+id/skipBtn"
         android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/button3"
-        android:text="&lt;- Back" />
+        android:layout_toLeftOf="@+id/endQuizBtn"
+        android:text="&lt;- Back"
+        android:onClick="backClick" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/skipBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="0dp"
-        android:layout_toRightOf="@+id/button3"
-        android:text="Skip ->" />
+        android:layout_toRightOf="@+id/endQuizBtn"
+        android:text="Skip ->"
+        android:onClick="skipClick" />
 
     <Button
         android:id="@+id/answerBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/button3"
+        android:layout_above="@+id/endQuizBtn"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:text="Answer" />
+        android:text="Answer" 
+        android:onClick="answerClick" />
 
 </RelativeLayout>

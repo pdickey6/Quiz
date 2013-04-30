@@ -1,0 +1,9 @@
+package groupg.quiztime;
+
+public class Question {
+	public void Question (){
+		_question = "Make a default question";
+	}
+	private String _question;
+	
+}
