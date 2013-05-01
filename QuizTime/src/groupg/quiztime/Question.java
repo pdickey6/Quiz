@@ -7,6 +7,7 @@ public class Question {
 	/** Instance Variables */
 	private String _stub;
 	private String[] _answers;
+	private int _userAns;
 	
 	/** Constructors */
 	//Default Constructor
@@ -79,4 +80,11 @@ public class Question {
 		return answers;
 	}
 
+	public void setUserAnswer(int userAns) {
+		_userAns = userAns;		
+	}
+
+	public int getUserAnswer(){
+		return _userAns;
+	}
 }

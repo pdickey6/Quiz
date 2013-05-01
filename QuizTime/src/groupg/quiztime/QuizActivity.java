@@ -11,8 +11,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
@@ -24,16 +25,17 @@ public class QuizActivity extends Activity {
 	private Question[] questions;
 	private int[] questionStatus;
 	private int questionCount;
+	private int currentQ;
+	private int correctIndex;
 	private TextView stub;
+	private RadioGroup answerGroup;
 	private RadioButton radio0;
 	private RadioButton radio1;
 	private RadioButton radio2;
 	private RadioButton radio3;
 	private Button backBtn;
 	private Button skipBtn;
-	private int currentQ;
-	private int correctIndex;
-
+	private Button answerBtn;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +43,14 @@ public class QuizActivity extends Activity {
 
 		Intent intent = getIntent();
 		String name = intent.getStringExtra(Launch.EXTRA_NAME);
-		setTitle("Quiz: " + name);		
-		//create and null answers
-		questionStatus = new int[4];
-		for(int i = 0; i < 4; i++){
-			//-1:notAttempted, 0:answeredWrong, 1: answeredCorrect
+		setTitle("Quiz: " + name);
+
+		questionCount = 10; //TODO: Make dynamic through combobox one Launch
+
+		//create array to hold statuses of all questions
+		//-1:notAttempted, 0:answeredWrong, 1:answeredCorrect
+		questionStatus = new int[questionCount];
+		for(int i = 0; i < questionCount; i++){			
 			questionStatus[i] = -1; //set statuses all to notAttempted			
 		}		
 
@@ -53,58 +58,54 @@ public class QuizActivity extends Activity {
 		// Show the Up button in the action bar.
 		setupActionBar();
 
-		//getUIObjects
+		//getGUIObjects
 		stub = (TextView) findViewById(R.id.stubText);
+		answerGroup = (RadioGroup) findViewById(R.id.answerRadioGroup);
 		radio0 = (RadioButton) findViewById(R.id.radio0);
 		radio1 = (RadioButton) findViewById(R.id.radio1);
 		radio2 = (RadioButton) findViewById(R.id.radio2);
 		radio3 = (RadioButton) findViewById(R.id.radio3);
 		backBtn = (Button) findViewById(R.id.backBtn);
 		skipBtn = (Button) findViewById(R.id.skipBtn);
+		answerBtn = (Button) findViewById(R.id.answerBtn);
 
-		//TODO: Need tom make this pick questionCount out of the 50 questions at random to fill questions[]
-		questionCount = 4; //TODO: Change to 10 when there are enough questions
+		//fill Question[] with questions from file
 		questions = importQuestions("scienceQuestions.txt", questionCount);
 
+		//Add listener to enable answer button when
+		answerGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			public void onCheckedChanged (RadioGroup group, int checkedId) {
+				answerBtn.setEnabled(true);
+			}
+		});
 
-		//Setup First Question
-		backBtn.setEnabled(false);
+		//Setup Initial Question
 		currentQ = 0;		
 		correctIndex = updateQuestion();
+		resetRadios();
+		backBtn.setEnabled(false);
+		answerBtn.setEnabled(false);
 	}
 
-	private int updateQuestion() {
-		int correctIndex = -1;
-		String[] answers = questions[currentQ].getAnswers();
-		stub.setText((currentQ + 1) + ") " + questions[currentQ].getStub());
-
-		if(answers[0].startsWith("(c)")){
-			correctIndex = 0;
-			answers[0] = answers[0].substring(3);
-		} else if(answers[1].startsWith("(c)")){
-			correctIndex = 1;
-			answers[1] = answers[1].substring(3);
-		} else if(answers[2].startsWith("(c)")){
-			correctIndex = 2;
-			answers[2] = answers[2].substring(3);
-		} else if(answers[3].startsWith("(c)")){
-			correctIndex = 3;
-			answers[3] = answers[3].substring(3);
+	/**
+	 * Set up the {@link android.app.ActionBar}, if the API is available.
+	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	private void setupActionBar() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
-
-		radio0.setText(answers[0]);
-		radio1.setText(answers[1]);
-		radio2.setText(answers[2]);
-		radio3.setText(answers[3]);
-
-		return correctIndex;
 	}
 
+	/** 
+	 * Produces an array of Questions containing questionCount number of random
+	 *  unique questions read from the given filename.
+	 **/
 	private Question[] importQuestions(String fileName, int questionCount) {
 		//TODO: Currently reads in questionsInFile number of question from file and returns them all. 
 		//This needs to read in the entire file (50 Q's), then return questionCount number of random questions in array
 
-		int questionsInFile = 4;
+		int questionsInFile = 13;
 		Question[] qs = new Question[questionsInFile];		
 
 		AssetManager aManager = getAssets();
@@ -169,15 +170,67 @@ public class QuizActivity extends Activity {
 		//TODO: loop through qs here and fill a new array of size questionCount with random Q's from qs
 		return qs;
 	}
-
+	
 	/**
-	 * Set up the {@link android.app.ActionBar}, if the API is available.
+	 * Updates the GUI to show the question at index currentQ in questions[]
+	 * Modifies answers[] to no longer have the leading "(c)" infront of correct answer
+	 * @return Radio index of correct answer
 	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	private void setupActionBar() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			getActionBar().setDisplayHomeAsUpEnabled(true);
+
+	private int updateQuestion() {
+		int correctIndex = -1;
+		String[] answers = questions[currentQ].getAnswers();
+		stub.setText((currentQ + 1) + ") " + questions[currentQ].getStub());
+
+		if(answers[0].startsWith("(c)")){
+			correctIndex = 0;
+			answers[0] = answers[0].substring(3);
+		} else if(answers[1].startsWith("(c)")){
+			correctIndex = 1;
+			answers[1] = answers[1].substring(3);
+		} else if(answers[2].startsWith("(c)")){
+			correctIndex = 2;
+			answers[2] = answers[2].substring(3);
+		} else if(answers[3].startsWith("(c)")){
+			correctIndex = 3;
+			answers[3] = answers[3].substring(3);
 		}
+
+		radio0.setText(answers[0]);
+		radio1.setText(answers[1]);
+		radio2.setText(answers[2]);
+		radio3.setText(answers[3]);
+		
+		//Check radio that user already answered
+		resetRadios();
+		if(questionStatus[currentQ] != -1){
+			int userAnsIndex = questions[currentQ].getUserAnswer();
+			RadioButton userAnswer = (RadioButton) answerGroup.getChildAt(userAnsIndex);
+			userAnswer.setChecked(true);
+			answerBtn.setEnabled(false);
+		}
+
+		return correctIndex;
+	}
+
+	private int getSelectedAnsIndex() {
+		int index = -1;
+		if(radio0.isChecked())
+			index = 0;
+		else if(radio1.isChecked())
+			index = 1;
+		else if(radio2.isChecked())
+			index = 2;
+		else if(radio3.isChecked())
+			index = 3;
+
+		return index;
+	}
+
+	private void resetRadios() {
+		RadioGroup radios = ((RadioGroup) findViewById(R.id.answerRadioGroup)) ;
+		radios.clearCheck();
+		answerBtn.setEnabled(false);
 	}
 
 	@Override
@@ -192,22 +245,60 @@ public class QuizActivity extends Activity {
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			// This ID represents the Home or Up button. In the case of this
-			// activity, the Up button is shown. Use NavUtils to allow users
-			// to navigate up one level in the application structure. For
-			// more details, see the Navigation pattern on Android Design:
-			//
-			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-			//
+			// activity, the Up button is shown.
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
+
+
+	/** onClick listener for backBtn **/
+	public void backClick(View view){
+		//Mark Q as not answered and load previous Q
+		if(currentQ == questionCount -1){
+			//enable skip btn, not on last one anymore
+			skipBtn.setEnabled(true);
+		}
+
+		//Setup Q unless at end
+		currentQ--;		
+		correctIndex = updateQuestion();
+
+		if(currentQ == 0){
+			//enable backBtn
+			backBtn.setEnabled(false);
+		}		
+	}
+
+	/** onClick listener for skipBtn **/
+	public void skipClick(View view){
+
+		//Mark Q as not answered and load next Q
+		if(currentQ == 0){
+			//enable backBtn
+			backBtn.setEnabled(true);
+		}
+		//Setup Q uless at end
+		currentQ++;		
+		correctIndex = updateQuestion();
+
+		if(currentQ == questionCount -1){
+			//disable skip btn, end of question list
+			skipBtn.setEnabled(false);
+		}
+	}
+
 	/** onClick listener for answerBtn **/
 	public void answerClick(View view){
 		//Show next Q, save ans
 		int userAns = getSelectedAnsIndex(); 
+		questions[currentQ].setUserAnswer(userAns);
+
+		resetRadios();
+		answerBtn.setEnabled(false);
+
 		if( userAns == correctIndex){
 			//user answered correctly
 			questionStatus[currentQ] = 1;
@@ -229,8 +320,8 @@ public class QuizActivity extends Activity {
 		if(currentQ == questionCount -1){
 			//answered final question, sent to results
 			Intent intent = new Intent(this, ResultsActivity.class);
-
 			startActivity(intent);
+
 			return;
 		}
 
@@ -240,59 +331,11 @@ public class QuizActivity extends Activity {
 
 	}
 
-	private int getSelectedAnsIndex() {
-		int index = -1;
-		if(radio0.isSelected())
-			index = 0;
-		else if(radio1.isSelected())
-			index = 1;
-		else if(radio2.isSelected())
-			index = 2;
-		else if(radio3.isSelected())
-			index = 3;
-
-		return index;
-	}
-
 	/** onClick listener for endQuizBtn **/
 	public void endQuizClick(View view){
+		resetRadios();		
 		Intent intent = new Intent(this, ResultsActivity.class);
 
 		startActivity(intent);
-	}
-
-	/** onClick listener for backBtn **/
-	public void backClick(View view){
-		//Mark Q as not answered and load previous Q
-		if(currentQ == questionCount -1){
-			//enable skip btn, not on last one anymore
-			skipBtn.setEnabled(true);
-		}
-
-		//Setup Q uless at end
-		currentQ--;		
-		correctIndex = updateQuestion();
-
-		if(currentQ == 0){
-			//enable backBtn
-			backBtn.setEnabled(false);
-		}
-	}
-
-	/** onClick listener for skipBtn **/
-	public void skipClick(View view){
-		//Mark Q as not answered and load next Q
-		if(currentQ == 0){
-			//enable backBtn
-			backBtn.setEnabled(true);
-		}
-		//Setup Q uless at end
-		currentQ++;		
-		correctIndex = updateQuestion();
-
-		if(currentQ == questionCount -1){
-			//disable skip btn, end of question list
-			skipBtn.setEnabled(false);
-		}
 	}
 }
