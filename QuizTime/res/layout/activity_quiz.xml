@@ -72,10 +72,11 @@
                 android:text="What causes night and day?"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
+            <ProgressBar
+                android:id="@+id/quizProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
             <RadioGroup
                 android:id="@+id/answerRadioGroup"

@@ -11,6 +11,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
@@ -22,11 +24,15 @@ import android.content.res.AssetManager;
 import android.os.Build;
 
 public class QuizActivity extends Activity {
+	public final static String EXTRA_RESULTS = "groupg.quiztime.RESULTS";
+	public final static int DEFAULT_QUESTION_COUNT = 10;
+
 	private Question[] questions;
 	private int[] questionStatus;
 	private int questionCount;
 	private int currentQ;
 	private int correctIndex;
+	private int answerCtr;
 	private TextView stub;
 	private RadioGroup answerGroup;
 	private RadioButton radio0;
@@ -36,16 +42,16 @@ public class QuizActivity extends Activity {
 	private Button backBtn;
 	private Button skipBtn;
 	private Button answerBtn;
+	private ProgressBar quizProgress;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		Intent intent = getIntent();
-		String name = intent.getStringExtra(Launch.EXTRA_NAME);
-		setTitle("Quiz: " + name);
+		questionCount = intent.getIntExtra(Launch.EXTRA_Q_COUNT, DEFAULT_QUESTION_COUNT);		
 
-		questionCount = 10; //TODO: Make dynamic through combobox one Launch
+		int questionsInFile = 13;//TODO: THis has to be updated with new files!
 
 		//create array to hold statuses of all questions
 		//-1:notAttempted, 0:answeredWrong, 1:answeredCorrect
@@ -68,9 +74,10 @@ public class QuizActivity extends Activity {
 		backBtn = (Button) findViewById(R.id.backBtn);
 		skipBtn = (Button) findViewById(R.id.skipBtn);
 		answerBtn = (Button) findViewById(R.id.answerBtn);
+		quizProgress = (ProgressBar) findViewById(R.id.quizProgressBar);
 
 		//fill Question[] with questions from file
-		questions = importQuestions("scienceQuestions.txt", questionCount);
+		questions = importQuestions("scienceQuestions.txt", questionCount, questionsInFile);
 
 		//Add listener to enable answer button when
 		answerGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -80,8 +87,9 @@ public class QuizActivity extends Activity {
 		});
 
 		//Setup Initial Question
-		currentQ = 0;		
-		correctIndex = updateQuestion();
+		currentQ = 0; answerCtr = 0;
+		quizProgress.setMax(questionCount);
+		correctIndex = updateQuestion();		
 		resetRadios();
 		backBtn.setEnabled(false);
 		answerBtn.setEnabled(false);
@@ -101,12 +109,9 @@ public class QuizActivity extends Activity {
 	 * Produces an array of Questions containing questionCount number of random
 	 *  unique questions read from the given filename.
 	 **/
-	private Question[] importQuestions(String fileName, int questionCount) {
-		//TODO: Currently reads in questionsInFile number of question from file and returns them all. 
-		//This needs to read in the entire file (50 Q's), then return questionCount number of random questions in array
+	private Question[] importQuestions(String fileName, int questionCount, int questionsInFile) {
 
-		int questionsInFile = 13;
-		Question[] qs = new Question[questionsInFile];		
+		Question[] allQs = new Question[questionsInFile];		
 
 		AssetManager aManager = getAssets();
 		InputStream iStream = null;
@@ -164,19 +169,43 @@ public class QuizActivity extends Activity {
 
 			question.setAnswers(ans[1], ans[2], ans[3], ans[0]);
 
-			qs[ctr] = question;
+			allQs[ctr] = question;
 		}
 
-		//TODO: loop through qs here and fill a new array of size questionCount with random Q's from qs
-		return qs;
+		return getRandomQuestions(allQs, questionCount);
 	}
-	
+
+	/**
+	 * Randomizes questions from allQs into an array of size questionCt
+	 * @return array[questionCt] containing random questions from allQs
+	 */
+	private Question[] getRandomQuestions(Question[] allQs, int questionCt) {
+		Question[] _qs = new Question[questionCt];
+
+		for(int i = 0; i < questionCount; i++){
+			//Randomly pick questionCount number of questions
+			int r1 = (int) (Math.random() * allQs.length); 
+			Question randQ = allQs[r1];
+
+			while(!randQ.getClean()){
+				//randQ has already been read, so read another
+				r1 = (int) (Math.random() * allQs.length); 
+				randQ = allQs[r1]; 
+			}
+
+			//question has not been read already, add it to question list in next position and set clean=false to prevent duplicates
+			_qs[i] = randQ;
+			allQs[r1].setClean(false);
+		}	
+
+		return _qs;
+	}
+
 	/**
 	 * Updates the GUI to show the question at index currentQ in questions[]
-	 * Modifies answers[] to no longer have the leading "(c)" infront of correct answer
+	 * Modifies answers[] to no longer have the leading "(c)" in front of correct answer
 	 * @return Radio index of correct answer
 	 */
-
 	private int updateQuestion() {
 		int correctIndex = -1;
 		String[] answers = questions[currentQ].getAnswers();
@@ -200,7 +229,7 @@ public class QuizActivity extends Activity {
 		radio1.setText(answers[1]);
 		radio2.setText(answers[2]);
 		radio3.setText(answers[3]);
-		
+
 		//Check radio that user already answered
 		resetRadios();
 		if(questionStatus[currentQ] != -1){
@@ -227,6 +256,9 @@ public class QuizActivity extends Activity {
 		return index;
 	}
 
+	/**
+	 * Clear radios and disable answer btn
+	 */
 	private void resetRadios() {
 		RadioGroup radios = ((RadioGroup) findViewById(R.id.answerRadioGroup)) ;
 		radios.clearCheck();
@@ -295,7 +327,8 @@ public class QuizActivity extends Activity {
 		//Show next Q, save ans
 		int userAns = getSelectedAnsIndex(); 
 		questions[currentQ].setUserAnswer(userAns);
-
+		answerCtr++;
+		quizProgress.setProgress(answerCtr);
 		resetRadios();
 		answerBtn.setEnabled(false);
 
@@ -320,8 +353,9 @@ public class QuizActivity extends Activity {
 		if(currentQ == questionCount -1){
 			//answered final question, sent to results
 			Intent intent = new Intent(this, ResultsActivity.class);
-			startActivity(intent);
+			intent.putExtra(EXTRA_RESULTS, questionStatus);
 
+			startActivity(intent);
 			return;
 		}
 
@@ -334,7 +368,9 @@ public class QuizActivity extends Activity {
 	/** onClick listener for endQuizBtn **/
 	public void endQuizClick(View view){
 		resetRadios();		
+
 		Intent intent = new Intent(this, ResultsActivity.class);
+		intent.putExtra(EXTRA_RESULTS, questionStatus);
 
 		startActivity(intent);
 	}

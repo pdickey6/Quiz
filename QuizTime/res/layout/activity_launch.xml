@@ -9,29 +9,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".Launch" >
 
-    <EditText
-        android:id="@+id/nameInput"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:ems="10"
-        android:hint="Enter Name"
-        android:inputType="textPersonName" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/nameInput"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
-        android:text="Science Edition"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="@dimen/LargePlus"
-        android:textStyle="italic" />
-
     <Button
         android:id="@+id/startQuizBtn"
         android:layout_width="wrap_content"
@@ -39,8 +16,32 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:minHeight="@dimen/DoubleHigh"
+        android:layout_below="@+id/textQuestionCount"
+        android:layout_marginTop="28dp"
+        android:minHeight="@dimen/Jumbo"
         android:onClick="StartQuizClick"
-        android:text="Start Quiz" />
+        android:text="Start Quiz"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Number of Questions"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <EditText
+        android:id="@+id/textQuestionCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_alignRight="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:ems="10"
+        android:gravity="center_horizontal"
+        android:hint="1-50"
+        android:inputType="number" />
 
 </RelativeLayout>
